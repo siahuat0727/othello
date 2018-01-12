@@ -61,10 +61,10 @@ BitBoard::BitBoard()
 {
 	bitDisks[BLACK] = 0;
 	bitDisks[WHITE] = 0;
-	setBit(3, 3, BLACK);
-	setBit(4, 4, BLACK);
-	setBit(3, 4, WHITE);
-	setBit(4, 3, WHITE);
+	setBit(3, 4, BLACK);
+	setBit(4, 3, BLACK);
+	setBit(3, 3, WHITE);
+	setBit(4, 4, WHITE);
 }
 
 inline bool BitBoard::testBit(int x, int y, bitmap b) const {
@@ -109,7 +109,7 @@ void BitBoard::print() const{
 		}
 		putchar('\n');
 	}
-	printf("   o : black\tx : white\n");
+	printf("   o : black %d\tx : white %d\n", countBlack(), countWhite());
 }
 
 inline void BitBoard::copy(const BitBoard &board){
@@ -130,8 +130,11 @@ inline int BitBoard::countWhite() const{
 } 
 
 unsigned int BitBoard::getHash() const {
-	bitmap shiftedWhite = (bitDisks[1]>>4) | (bitDisks[1]<<60);
-	unsigned int hash32 = (unsigned int)(((bitDisks[0]>>32) ^ bitDisks[0]) ^ ((shiftedWhite>>32) ^ shiftedWhite));
+	bitmap rotatedWhite = bitDisks[1];
+	rotatedWhite = (rotatedWhite & 0xf0f0f0f000000000) >> 4  | (rotatedWhite & 0x0f0f0f0f00000000) >> 32 | (rotatedWhite & 0x00000000f0f0f0f0) << 32 | (rotatedWhite & 0x000000000f0f0f0f) << 4;
+	rotatedWhite = (rotatedWhite & 0xcccc0000cccc0000) >> 2  | (rotatedWhite & 0x3333000033330000) >> 16 | (rotatedWhite & 0x0000cccc0000cccc) << 16 | (rotatedWhite & 0x0000333300003333) << 2;
+	rotatedWhite = (rotatedWhite & 0xaa00aa00aa00aa00) >> 1  | (rotatedWhite & 0x5500550055005500) >> 8 | (rotatedWhite & 0x00aa00aa00aa00aa) << 8  | (rotatedWhite & 0x0055005500550055) << 1;
+	unsigned int hash32 = (unsigned int)(((bitDisks[0]>>32) ^ bitDisks[0]) ^ ((rotatedWhite>>32) ^ rotatedWhite));
 	unsigned int hash26 = (hash32 >> 6) ^ (hash32 & 0x03ffffff);
 	assert((hash26 & 0xfc000000) == 0); // TODO check and inline
 	/*
