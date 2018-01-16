@@ -8,18 +8,18 @@
 
 using namespace std;
 
-#define INF 0x3fffffff
-#define NEG_INF 0x80000000
-#define BAD 0x80808080
-#define GOOD 0x3f3f3f3f
+#define INF 0x3fff
+#define NEG_INF 0x8000
+#define BAD 0x8080
+#define GOOD 0x3f3f
 
 #define HASH
 
 vector<Position> possiblePosition;
 typedef struct{
 	BitBoard board;
-	int depth;
-	int value;
+	short int depth;
+	short int value;
 }Hash;
 Hash hashTable[1 << 26]; // save the best position in this 
  
@@ -32,16 +32,16 @@ int maiN(){
 	int my_color = -1;
 	while(my_color>>1){
 		puts("please input my color");
-		scanf("%d", &my_color);
+		if(scanf("%d", &my_color) <= 0)
+			getchar();
 	}
-	hm_vs_ai(my_color, BOARD, 2);
+	hm_vs_ai(my_color, BOARD, 7);
 	return 0;
 }
 
 int main(){
-	printf("sizeof hash = %d\n", sizeof(Hash));
 	unsigned int start = get_time();
-	ai_vs_ai(8);
+	ai_vs_ai(7);
 	unsigned int end = get_time();
 	printf("time used: %u ms\n", end-start);
 	return 0;
@@ -68,10 +68,16 @@ void hm_vs_ai(const int ai_color, BitBoard &board, int depth){
 			}else{
 				printf("please input your move (e.g.  2 3): ");
 				char buf[10] = "";
-				Position pos;
-				int depth = 0;
 				while(fgets(buf, 9, stdin)!= NULL){
-					if(sscanf(buf, "%hd %hd", &pos.x, &pos.y) == 2){
+					int x;
+					char y;
+					int depth = 0;
+					if(sscanf(buf, "%d %c", &x, &y) == 2){
+						if (x <= 0 || x > BitBoard::SIZE || y < 'A' || y > 'H' ){
+							printf("wrong input, please input again\n");
+							continue;
+						}
+						Position pos = {.x = (short)x - 1, .y = (short)(y - 'A')};
 						if(board.go(pos, hm_color) == false){
 							printf("Invalid move %d %d, please select move again\n", pos.x, pos.y);
 							continue;
@@ -80,14 +86,17 @@ void hm_vs_ai(const int ai_color, BitBoard &board, int depth){
 						board.print();
 						break;
 					}else if(sscanf(buf, "d%d", &depth) > 0){
-						const int max_depth = 13;
+						const int max_depth = 9;
 						if(depth <= 0){
 							depth = 5;
 							printf("set default depth = 5\n");
 						}else if(depth > max_depth){
 							depth = max_depth;
 							printf("too deep, set to %d\n", max_depth);
-						}
+						}else
+							printf("set depth to %d\n", depth);
+					}else{
+						printf("wrong input, please input again\n");
 					}
 				}
 			}
@@ -141,7 +150,7 @@ void ai_vs_ai(int depth){
 	printf("search = %llu\ntotal hash hit = %llu\ncollision = %llu\n", SEARCH, HASH_HIT, COLLISION);
 }
 
-int getValue(int color, const BitBoard &board){
+short int getValue(int color, const BitBoard &board){
 	static const bitmap middle        = 0x003c7e7e7e7e3c00;
 	static const bitmap edge          = 0x3c0081818181003c;
 	static const bitmap star_corner   = 0x0042000000004200; // corner dui jiao
@@ -150,30 +159,30 @@ int getValue(int color, const BitBoard &board){
 
 	bitmap my_disks = board.bitDisks[color];
 	bitmap op_disks = board.bitDisks[color^1];
-	int value = 0;
+	short int value = 0;
 
 	value += __builtin_popcountll(my_disks & middle);
 	value += __builtin_popcountll(my_disks & edge) << 2;
 	value -= __builtin_popcountll(my_disks & star_corner) << 4;
 	value -= __builtin_popcountll(my_disks & around_corner) << 2;
-	value += __builtin_popcountll(my_disks & corner) << 10;
+	value += __builtin_popcountll(my_disks & corner) << 5;
 	
 	value -= __builtin_popcountll(op_disks & middle);
 	value -= __builtin_popcountll(op_disks & edge) << 2;
 	value += __builtin_popcountll(op_disks & star_corner) << 4;
 	value += __builtin_popcountll(op_disks & around_corner) << 2;
-	value -= __builtin_popcountll(op_disks & corner) << 10;
+	value -= __builtin_popcountll(op_disks & corner) << 5;
 
 	whereCanGo(color, board);
-	static const int mobility[8][8] = {
-		{20, 4,12,12,12,12, 4,20},
-		{ 4, 4, 8, 8, 8, 8, 4, 4},
-		{12, 8, 8, 8, 8, 8, 8,12},
-		{12, 8, 8, 8, 8, 8, 8,12},
-		{12, 8, 8, 8, 8, 8, 8,12},
-		{12, 8, 8, 8, 8, 8, 8,12},
-		{ 4, 4, 8, 8, 8, 8, 4, 4},
-		{20, 4,12,12,12,12, 4,20}
+	static const short int mobility[8][8] = {
+		{20, 4, 8, 8, 8, 8, 4,20},
+		{ 4, 4, 5, 5, 5, 5, 4, 4},
+		{ 8, 5, 5, 5, 5, 5, 5, 8},
+		{ 8, 5, 5, 5, 5, 5, 5, 8},
+		{ 8, 5, 5, 5, 5, 5, 5, 8},
+		{ 8, 5, 5, 5, 5, 5, 5, 8},
+		{ 4, 4, 5, 5, 5, 5, 4, 4},
+		{20, 4, 8, 8, 8, 8, 4,20}
 	};
 
 	for(Position pos : possiblePosition){
@@ -187,9 +196,9 @@ void printPosValue(const Position &pos,const int &value){
 	printf("x = %d\ty = %d\tvalue=%d\n", pos.x, pos.y, value);
 }
 
-int alphaBeta(int depth, int color, const BitBoard &prevBoard, int alpha, int beta){
+short int alphaBeta(int depth, int color, const BitBoard &prevBoard, short int alpha, short int beta){
 	SEARCH++;
-	int bestValue = NEG_INF;
+	short int bestValue = NEG_INF;
 	if (depth <= 0){
 		return getValue(color, prevBoard);
 	}
@@ -207,7 +216,7 @@ int alphaBeta(int depth, int color, const BitBoard &prevBoard, int alpha, int be
 
 	if(!canIGo(color, prevBoard)){
 		if(!canIGo(color^1, prevBoard)){
-			int winner = prevBoard.findWinner();
+			short int winner = (short int)prevBoard.findWinner();
 			if(winner == color)
 				return GOOD;
 			else if(winner == (color^1))
@@ -223,7 +232,7 @@ int alphaBeta(int depth, int color, const BitBoard &prevBoard, int alpha, int be
 	for(Position pos : possiblePos){
 		tmpBoard.copy(prevBoard);
 		tmpBoard.go(pos, color);
-		int value = -alphaBeta(depth-1, color^1, tmpBoard, -beta, -alpha);
+		short int value = -alphaBeta(depth-1, color^1, tmpBoard, -beta, -alpha);
 		if(value > alpha){
 			if(value >= beta)
 				return value;
@@ -248,30 +257,40 @@ int alphaBeta(int depth, int color, const BitBoard &prevBoard, int alpha, int be
 
 Position minMax(int depth, int color){
 	MY_COLOR = color;
-	int bestValue = NEG_INF;
+	short int bestValue = NEG_INF;
 	Position bestMove;
 	vector<Position> possiblePos(possiblePosition);
 	BitBoard tmpBoard;
 	for(Position pos : possiblePos){
 		tmpBoard.copy(BOARD);
 		tmpBoard.go(pos, color);
-		int value = -alphaBeta(depth-1, color^1, tmpBoard, 0x80000001, 0x3fff3fff);
+		short int value = -alphaBeta(depth-1, color^1, tmpBoard, 0x8001, 0x3ff3);
 		if(value > bestValue){
 			bestValue = value;
 			bestMove  = pos; // TODO operation= overloading
 		}
 	}
-	printf("best move is %d %d, value = %d\n", bestMove.x, bestMove.y, bestValue);
+	printf("best move is %d %c, value = %hd\n", bestMove.x + 1, bestMove.y+'A', bestValue);
 	return bestMove;
 }
 
 inline void ai_go(int color, int depth){
 	static unsigned int total_time = 0;
 	unsigned int start_time = get_time();
+	int total_disks = BOARD.countWhite() + BOARD.countBlack();
+	if(total_disks > 32)
+		depth++;
+	if(total_disks > 36)
+		depth++;
+	if(total_disks > 40)
+		depth++; 
+	if(total_disks > 43)
+		depth = 64 - total_disks + 3;
 	BOARD.go(minMax(depth, color), color);
 	unsigned int end_time = get_time();
 	unsigned int one_step_time = end_time - start_time;
 	total_time += one_step_time;
+	printf("d = %d\n", depth);
 	printf("this time used %u ms, total used %u ms\n", one_step_time, total_time);
 }
 

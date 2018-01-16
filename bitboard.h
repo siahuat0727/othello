@@ -100,10 +100,10 @@ void BitBoard::print() const{
 	putchar('\n');
 	putchar(' ');
 	for(int i = 0; i < SIZE; ++i)
-		printf(" %d", i);
+		printf(" %c", i+'A');
 	putchar('\n');
 	for(int i = 0; i < SIZE; ++i) {
-		printf("%d", i);
+		printf("%d", i+1);
 		for(int j = 0; j < SIZE; ++j) {
 			printf(" %c", isBlack(i,j) ? 'o' : isWhite(i,j) ? 'x' : ' ');
 		}
