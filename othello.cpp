@@ -28,7 +28,7 @@ unsigned long long SEARCH; // TODO delete
 unsigned long long HASH_HIT; // TODO delete
 unsigned long long COLLISION; // TODO delete
 
-int maiN(){
+int main(){
 	int my_color = -1;
 	while(my_color>>1){
 		puts("please input my color");
@@ -39,7 +39,7 @@ int maiN(){
 	return 0;
 }
 
-int main(){
+int maiN(){
 	unsigned int start = get_time();
 	ai_vs_ai(7);
 	unsigned int end = get_time();
@@ -218,9 +218,9 @@ short int alphaBeta(int depth, int color, const BitBoard &prevBoard, short int a
 		if(!canIGo(color^1, prevBoard)){
 			short int winner = (short int)prevBoard.findWinner();
 			if(winner == color)
-				return GOOD;
+				return 20000 + prevBoard.countColor(color);
 			else if(winner == (color^1))
-				return BAD;
+				return - 20000 + prevBoard.countColor(color);
 			else
 				return 0;
 		}
@@ -265,9 +265,14 @@ Position minMax(int depth, int color){
 		tmpBoard.copy(BOARD);
 		tmpBoard.go(pos, color);
 		short int value = -alphaBeta(depth-1, color^1, tmpBoard, 0x8001, 0x3ff3);
+		printf("%hd, %c\t%hd\n", pos.x+1, pos.y+'A', value);
 		if(value > bestValue){
 			bestValue = value;
 			bestMove  = pos; // TODO operation= overloading
+		}
+		if(bestValue > 19900){
+			printf("good move is %d %c, value = %hd\n", bestMove.x + 1, bestMove.y+'A', bestValue);
+			return bestMove;
 		}
 	}
 	printf("best move is %d %c, value = %hd\n", bestMove.x + 1, bestMove.y+'A', bestValue);

@@ -44,6 +44,7 @@ class BitBoard {
 		int findWinner() const;
 		int countBlack() const;
 		int countWhite() const;
+		int countColor(int color) const;
 
 		unsigned int getHash() const;
 
@@ -127,6 +128,10 @@ inline int BitBoard::countBlack() const{ // TODO delete
 
 inline int BitBoard::countWhite() const{
 	return __builtin_popcountll(bitDisks[1]);
+} 
+
+inline int BitBoard::countColor(int color) const{
+	return __builtin_popcountll(bitDisks[color]);
 } 
 
 unsigned int BitBoard::getHash() const {
