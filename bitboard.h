@@ -104,6 +104,7 @@ void BitBoard::print() const{
 		printf(" %c", i+'A');
 	putchar('\n');
 	for(int i = 0; i < SIZE; ++i) {
+		//printf("%d", i);
 		printf("%d", i+1);
 		for(int j = 0; j < SIZE; ++j) {
 			printf(" %c", isBlack(i,j) ? 'o' : isWhite(i,j) ? 'x' : ' ');
@@ -141,11 +142,7 @@ unsigned int BitBoard::getHash() const {
 	rotatedWhite = (rotatedWhite & 0xaa00aa00aa00aa00) >> 1  | (rotatedWhite & 0x5500550055005500) >> 8 | (rotatedWhite & 0x00aa00aa00aa00aa) << 8  | (rotatedWhite & 0x0055005500550055) << 1;
 	unsigned int hash32 = (unsigned int)(((bitDisks[0]>>32) ^ bitDisks[0]) ^ ((rotatedWhite>>32) ^ rotatedWhite));
 	unsigned int hash26 = (hash32 >> 6) ^ (hash32 & 0x03ffffff);
-	assert((hash26 & 0xfc000000) == 0); // TODO check and inline
-	/*
-	print();
-	printf("hash value = %u\n", hash26);
-	*/
+	assert((hash26 & 0xfc000000) == 0);
 	return hash26;
 }
 

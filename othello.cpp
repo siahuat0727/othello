@@ -64,7 +64,7 @@ void hm_vs_ai(const int ai_color, BitBoard &board, int depth){
 		}else if(color == hm_color){
 			if(!canIGo(hm_color)){
 				no_move++;
-				printf("you have no move...\n");
+				printf("\t\t\t\t\t\t\t\tyou have no move...\n\n\n\n\n\n\n");
 			}else{
 				printf("please input your move (e.g.  2 3): ");
 				char buf[10] = "";
@@ -72,7 +72,13 @@ void hm_vs_ai(const int ai_color, BitBoard &board, int depth){
 					int x;
 					char y;
 					int depth = 0;
+					Position pos;
 					if(sscanf(buf, "%d %c", &x, &y) == 2){
+					//if(sscanf(buf, "%hd %hd", &pos.x, &pos.y) == 2){
+//						if (pos.x < 0 || pos.x >= BitBoard::SIZE || pos.y < 0 || pos.y >= 8 ){
+//							printf("wrong input, please input again\n");
+//							continue;
+//						}
 						if (x <= 0 || x > BitBoard::SIZE || y < 'A' || y > 'H' ){
 							printf("wrong input, please input again\n");
 							continue;
@@ -271,11 +277,13 @@ Position minMax(int depth, int color){
 			bestMove  = pos; // TODO operation= overloading
 		}
 		if(bestValue > 19900){
-			printf("good move is %d %c, value = %hd\n", bestMove.x + 1, bestMove.y+'A', bestValue);
+			//printf("\t\t\t\t\t\t\t\t\t\tgood move is %d %d, value = %hd\n", bestMove.x, bestMove.y, bestValue);
+			printf("\t\t\t\t\t\t\t\t\t\tgood move is %d %c, value = %hd\n", bestMove.x+1, bestMove.y+'A', bestValue);
 			return bestMove;
 		}
 	}
-	printf("best move is %d %c, value = %hd\n", bestMove.x + 1, bestMove.y+'A', bestValue);
+	//printf("\t\t\t\t\t\t\t\t\t\tbest move is %d %d, value = %hd\n", bestMove.x, bestMove.y, bestValue);
+	printf("\t\t\t\t\t\t\t\t\t\tbest move is %d %c, value = %hd\n", bestMove.x+1, bestMove.y+'A', bestValue);
 	return bestMove;
 }
 
